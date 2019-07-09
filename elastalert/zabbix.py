@@ -63,7 +63,10 @@ class ZabbixAlerter(Alerter):
         # the aggregation option set
         zm = []
         for match in matches:
-            ts_epoch = int(datetime.strptime(match['@timestamp'], "%Y-%m-%dT%H:%M:%S.%fZ").strftime('%s'))
+            if self.timestamp_type == 'iso':    
+                ts_epoch = int(match[self.timestamp_field])
+            else:                                          
+                ts_epoch = int(datetime.strptime(match[self.timestamp_field], self.timestamp_strptime).strftime('%s'))
             zm.append(ZabbixMetric(host=self.zbx_host, key=self.zbx_key, value=1, clock=ts_epoch))
 
         ZabbixSender(zabbix_server=self.zbx_sender_host, zabbix_port=self.zbx_sender_port).send(zm)
