@@ -54,6 +54,9 @@ class ZabbixAlerter(Alerter):
         self.zbx_sender_port = self.rule.get('zbx_sender_port', 10051)
         self.zbx_host = self.rule.get('zbx_host')
         self.zbx_key = self.rule.get('zbx_key')
+        self.timestamp_field = self.rule.get('timestamp_field', '@timestamp')
+        self.timestamp_type = self.rule.get('timestamp_type', 'iso')
+        self.timestamp_strptime = self.rule.get('timestamp_strptime', '%Y-%m-%dT%H:%M:%S.%fZ')
 
     # Alert is called
     def alert(self, matches):
@@ -63,9 +66,9 @@ class ZabbixAlerter(Alerter):
         # the aggregation option set
         zm = []
         for match in matches:
-            if self.timestamp_type == 'iso':    
+            if self.timestamp_type == 'iso':
                 ts_epoch = int(match[self.timestamp_field])
-            else:                                          
+            else:
                 ts_epoch = int(datetime.strptime(match[self.timestamp_field], self.timestamp_strptime).strftime('%s'))
             zm.append(ZabbixMetric(host=self.zbx_host, key=self.zbx_key, value=1, clock=ts_epoch))
 
